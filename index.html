@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Relax.incom bd</title>
+  <style>
+    :root {
+      --primary: #28a745;      /* সবুজ */
+      --light: #ffffff;
+      --dark: #222;
+      --gray: #f0f2f5;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family: Arial, 'Segoe UI', sans-serif; }
+    body { background: var(--gray); color: var(--dark); min-height: 100vh; }
+
+    /* Auth Page */
+    #auth-page {
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--primary), #1e7e34);
+    }
+    .auth-box {
+      background: white; padding: 40px 25px; border-radius: 16px;
+      width: 100%; max-width: 380px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35); text-align: center;
+    }
+    .auth-box h2 { margin-bottom: 25px; color: var(--primary); font-size: 1.8rem; }
+    input, select { width: 100%; padding: 14px; margin: 12px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+    button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #218838; }
+    .toggle-link { margin-top: 20px; color: var(--primary); cursor: pointer; font-weight: bold; }
+
+    /* Header */
+    header {
+      background: var(--primary); color: white; padding: 25px 15px; text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .banner-3d {
+      font-size: 3.8rem; font-weight: 900;
+      text-shadow: 3px 6px 12px rgba(0,0,0,0.6), 0 10px 20px rgba(0,0,0,0.4);
+      transform: perspective(600px) rotateX(12deg);
+      letter-spacing: 2px; margin: 15px 0;
+    }
+    #unveiled { color: #ffd700; font-size: 1.4rem; cursor: pointer; font-weight: bold; }
+
+    /* Main App */
+    #app { display: none; padding: 20px; padding-bottom: 100px; }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);   /* ৩টা করে কলাম */
+      gap: 18px 12px;
+      margin: 35px 0;
+    }
+    .card {
+      background: white; border-radius: 16px; padding: 20px 10px; text-align: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12); cursor: pointer;
+      transition: all 0.35s ease;
+    }
+    .card:hover {
+      transform: translateY(-10px) scale(1.05) rotateX(8deg);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.22);
+    }
+    .card i { font-size: 2.6rem; color: var(--primary); margin-bottom: 12px; }
+    .card span { font-size: 0.95rem; font-weight: 600; }
+
+    @media (max-width: 768px) { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .menu-grid { grid-template-columns: 1fr; } }
+
+    /* Profile Sidebar */
+    #profile-sidebar {
+      position: fixed; top: 0; right: -320px; width: 320px; height: 100%;
+      background: white; box-shadow: -6px 0 25px rgba(0,0,0,0.3);
+      transition: right 0.4s ease; padding: 40px 25px; z-index: 2000;
+      overflow-y: auto;
+    }
+    #profile-sidebar.open { right: 0; }
+    .dot-menu {
+      position: fixed; top: 18px; right: 20px; font-size: 2.2rem; cursor: pointer; z-index: 2100;
+      color: white; background: rgba(0,0,0,0.4); width: 50px; height: 50px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Verify & Withdraw Pages */
+    #verify-page, #withdraw-page {
+      display: none; padding: 50px 25px; text-align: center;
+      background: white; margin: 30px auto; max-width: 520px;
+      border-radius: 16px; box-shadow: 0 12px 50px rgba(0,0,0,0.25);
+    }
+    h1 { color: var(--primary); margin-bottom: 25px; font-size: 2.2rem; }
+    .number-box { font-size: 1.5rem; font-weight: bold; margin: 20px 0; background: #e9ecef; padding: 15px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 15px; }
+    .copy-btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+    #trx-box, #withdraw-number, #withdraw-amount { width: 100%; padding: 14px; margin: 15px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; }
+    #verify-btn, #confirm-withdraw { background: var(--primary); color: white; font-size: 1.2rem; padding: 15px; margin-top: 10px; }
+    #withdraw-page button.cancel { background: #dc3545; margin-top: 20px; }
+
+    @media (max-width: 600px) {
+      .banner-3d { font-size: 2.8rem; }
+      #profile-sidebar { width: 100%; right: -100%; }
+      #profile-sidebar.open { right: 0; }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- Auth Pages -->
+<div id="auth-page">
+  <div class="auth-box" id="login-box">
+    <h2>লগইন করুন</h2>
+    <input type="text" id="login-username" placeholder="ইউজারনেম" autocomplete="off" />
+    <input type="password" id="login-password" placeholder="পাসওয়ার্ড" autocomplete="off" />
+    <button onclick="login()">লগইন</button>
+    <div class="toggle-link" onclick="showRegister()">নতুন অ্যাকাউন্ট খুলুন</div>
+  </div>
+
+  <div class="auth-box" id="register-box" style="display:none;">
+    <h2>রেজিস্ট্রেশন</h2>
+    <input type="text" id="reg-username" placeholder="ইউজারনেম" autocomplete="off" />
+    <input type="password" id="reg-password" placeholder="পাসওয়ার্ড" autocomplete="off" />
+    <button onclick="register()">রেজিস্টার</button>
+    <div class="toggle-link" onclick="showLogin()">ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন</div>
+  </div>
+</div>
+
+<!-- Main Application -->
+<div id="app">
+  <div class="dot-menu" onclick="toggleProfile()">⋮</div>
+
+  <header>
+    <div class="banner-3d">Relax.incom io</div>
+    <div><span id="unveiled">Unveiled</span> → অ্যাকাউন্ট ভেরিফাই করুন</div>
+  </header>
+
+  <div class="menu-grid">
+    <div class="card" onclick="showBalance()"><i class="fas fa-wallet"></i><span>Balance</span></div>
+    <div class="card" onclick="goToVerify()"><i class="fas fa-coins"></i><span>Free Income</span></div>
+    <div class="card" onclick="goToVerify()"><i class="fas fa-trophy"></i><span>Pro Income</span></div>
+
+    <div class="card" onclick="goToVerify()"><i class="fas fa-keyboard"></i><span>Data Entry</span></div>
+    <div class="card" onclick="goToVerify()"><i class="fas fa-bullhorn"></i><span>Promo Job</span></div>
+    <div class="card" onclick="goToVerify()"><i class="fas fa-briefcase"></i><span>My Job</span></div>
+
+    <div class="card" onclick="goToVerify()"><i class="fas fa-robot"></i><span>AI Robot</span></div>
+    <div class="card" onclick="goToVerify()"><i class="fas fa-layer-group"></i><span>Staking</span></div>
+    <div class="card" onclick="showWithdraw()"><i class="fas fa-hand-holding-usd"></i><span>Withdraw</span></div>
+
+    <div class="card" onclick="goToVerify()"><i class="fas fa-percentage"></i><span>Offer</span></div>
+    <div class="card" onclick="showReferral()"><i class="fas fa-users"></i><span>Referral</span></div>
+    <div class="card" onclick="goToVerify()"><i class="fas fa-users-cog"></i><span>My Team</span></div>
+
+    <div class="card" onclick="goToVerify()"><i class="fas fa-money-bill-wave"></i><span>Salary</span></div>
+    <div class="card" onclick="goToVerify()"><i class="fas fa-gift"></i><span>Bonus</span></div>
+    <div class="card" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div>
+  </div>
+
+  <!-- Unveiled / Verify Page -->
+  <div id="verify-page">
+    <h1>Unveiled Account</h1>
+    <p style="font-size:1.2rem; margin:25px 0; line-height:1.5;">অ্যাকাউন্টটি ভ্যারিফাই করতে ১৫০ টাকা সেন্ড মানি করুন শুধু বিকাশে</p>
+    
+    <div class="number-box">
+      01304893753 বিকাশ আইডি
+      <button class="copy-btn" onclick="copyNumber()">কপি</button>
+    </div>
+
+    <input type="text" id="trx-box" placeholder="Trx আইডি বসান" />
+    <button id="verify-btn" onclick="fakeVerify()">Verified</button>
+
+    <p style="margin-top:30px; color:#555; font-size:0.95rem;">টাকা পাঠানোর পর Trx ID দিয়ে Verified বাটনে ক্লিক করুন</p>
+  </div>
+
+  <!-- Withdraw Page -->
+  <div id="withdraw-page">
+    <h1>Withdraw</h1>
+    <select id="withdraw-method">
+      <option value="">পেমেন্ট মেথড সিলেক্ট করুন</option>
+      <option value="bkash">বিকাশ</option>
+      <option value="nogod">নগদ</option>
+      <option value="rocket">রকেট</option>
+    </select>
+    <input type="text" id="withdraw-number" placeholder="আপনার মোবাইল নম্বর" />
+    <input type="number" id="withdraw-amount" placeholder="Amount (টাকা)" min="100" step="1" />
+    <button id="confirm-withdraw" onclick="fakeWithdraw()">Confirm Withdraw</button>
+    <button class="cancel" onclick="closeWithdraw()">বাতিল</button>
+  </div>
+
+  <!-- Profile Sidebar -->
+  <div id="profile-sidebar">
+    <h2>আমার প্রোফাইল</h2><br>
+    <p>নাম: <strong id="profile-name">User</strong></p>
+    <p>ব্যালেন্স: <strong id="profile-balance">0.00 টাকা</strong></p><br><br>
+    <button onclick="toggleProfile()" style="width:100%; padding:14px; background:#dc3545; color:white; border:none; border-radius:8px; font-size:1.1rem; cursor:pointer;">বন্ধ করুন</button>
+  </div>
+</div>
+
+<script>
+  let currentUser = "";
+
+  function showRegister() {
+    document.getElementById('login-box').style.display = 'none';
+    document.getElementById('register-box').style.display = 'block';
+  }
+
+  function showLogin() {
+    document.getElementById('register-box').style.display = 'none';
+    document.getElementById('login-box').style.display = 'block';
+  }
+
+  function register() {
+    const user = document.getElementById('reg-username').value.trim();
+    if (user) {
+      alert('রেজিস্ট্রেশন সফল! এখন লগইন করুন।');
+      showLogin();
+    } else {
+      alert('ইউজারনেম দিন!');
+    }
+  }
+
+  function login() {
+    const user = document.getElementById('login-username').value.trim();
+    if (user) {
+      currentUser = user;
+      document.getElementById('profile-name').textContent = currentUser;
+      document.getElementById('auth-page').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      window.history.pushState({page: 'home'}, null, "#home");
+    } else {
+      alert('ইউজারনেম দিন!');
+    }
+  }
+
+  function logout() {
+    if (confirm('লগআউট করবেন?')) {
+      location.reload();
+    }
+  }
+
+  function toggleProfile() {
+    document.getElementById('profile-sidebar').classList.toggle('open');
+  }
+
+  function goToVerify() {
+    document.getElementById('verify-page').style.display = 'block';
+    document.getElementById('withdraw-page').style.display = 'none';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    window.history.pushState({page: 'verify'}, null, "#verify");
+  }
+
+  function showWithdraw() {
+    document.getElementById('withdraw-page').style.display = 'block';
+    document.getElementById('verify-page').style.display = 'none';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function closeWithdraw() {
+    document.getElementById('withdraw-page').style.display = 'none';
+  }
+
+  function showBalance() {
+    alert('আপনার ব্যালেন্স: 0.00 টাকা');
+  }
+
+  function showReferral() {
+    const refLink = "https://relax.incom.bd/?ref=" + (currentUser || "user");
+    prompt("আপনার রেফারেল লিংক (কপি করুন):", refLink);
+  }
+
+  function copyNumber() {
+    navigator.clipboard.writeText("01304893753").then(() => {
+      alert("বিকাশ নম্বর কপি হয়েছে!");
+    }).catch(() => {
+      alert("কপি করতে সমস্যা হয়েছে। নিজে কপি করুন: 01304893753");
+    });
+  }
+
+  function fakeVerify() {
+    const trx = document.getElementById('trx-box').value.trim();
+    if (trx.length > 5) {  // সিম্পল চেক
+      alert('ভেরিফিকেশন সাবমিট হয়েছে! (ডেমো মোড)');
+      document.getElementById('verify-page').style.display = 'none';
+    } else {
+      alert('সঠিক Trx আইডি দিন!');
+    }
+  }
+
+  function fakeWithdraw() {
+    const method = document.getElementById('withdraw-method').value;
+    const num = document.getElementById('withdraw-number').value.trim();
+    const amt = parseFloat(document.getElementById('withdraw-amount').value);
+
+    if (!method) return alert('পেমেন্ট মেথড সিলেক্ট করুন!');
+    if (!num) return alert('নম্বর দিন!');
+    if (isNaN(amt) || amt < 100) return alert('সর্বনিম্ন ১০০ টাকা উইথড্র করতে পারবেন!');
+
+    alert(`Withdraw রিকোয়েস্ট সফলভাবে সাবমিট হয়েছে!\nমেথড: ${method.toUpperCase()}\nনম্বর: ${num}\nপরিমাণ: ${amt} টাকা\n(ডেমো মোড)`);
+    closeWithdraw();
+  }
+
+  // ব্রাউজার ব্যাক বাটন হ্যান্ডেল
+  window.onpopstate = function(event) {
+    document.getElementById('verify-page').style.display = 'none';
+    document.getElementById('withdraw-page').style.display = 'none';
+    document.getElementById('profile-sidebar').classList.remove('open');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  };
+
+  // Unveiled ক্লিক
+  document.getElementById('unveiled').onclick = goToVerify;
+</script>
+</body>
+</html>
